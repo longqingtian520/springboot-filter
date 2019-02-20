@@ -14,71 +14,78 @@ import java.io.IOException;
  */
 public class SessionFilter implements Filter {
 
-    //标示符：表示当前用户未登录(可根据自己项目需要改为json样式)
-    String NO_LOGIN = "您还未登录";
+	// 标示符：表示当前用户未登录(可根据自己项目需要改为json样式)
+	String NO_LOGIN = "您还未登录";
 
-    //不需要登录就可以访问的路径(比如:注册登录等)
-    String[] includeUrls = new String[]{"/login","/register","/user/login.html"};
+	// 不需要登录就可以访问的路径(比如:注册登录等)
+	String[] includeUrls = new String[] { "/login", "/register", "/user/login.html" };
 
+	@Override
+	public void init(FilterConfig filterConfig) throws ServletException {
 
-    @Override
-    public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
-        HttpServletRequest request = (HttpServletRequest) servletRequest;
-        HttpServletResponse response = (HttpServletResponse) servletResponse;
-        HttpSession session = request.getSession(false);
-        String uri = request.getRequestURI();
+	}
 
-        System.out.println("filter url:"+uri);
-        //是否需要过滤
-        boolean needFilter = isNeedFilter(uri);
+	@Override
+	public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain)
+			throws IOException, ServletException {
+		HttpServletRequest request = (HttpServletRequest) servletRequest;
+		HttpServletResponse response = (HttpServletResponse) servletResponse;
+		HttpSession session = request.getSession(false);
+		String uri = request.getRequestURI();
 
+		System.out.println("filter url:" + uri);
+		// 是否需要过滤
+		boolean needFilter = isNeedFilter(uri);
 
-        if (!needFilter) { //不需要过滤直接传给下一个过滤器
-        	System.out.println("不需要过滤直接传给下一个过滤器");
-            filterChain.doFilter(servletRequest, servletResponse);
-        } else { //需要过滤器
-            // session中包含user对象,则是登录状态
-          if(session!=null&&session.getAttribute("user") != null){
-                System.out.println("user:"+session.getAttribute("user"));
-                filterChain.doFilter(request, response);
-            }else{
-                String requestType = request.getHeader("X-Requested-With");
-                //判断是否是ajax请求
-                if(requestType!=null && "XMLHttpRequest".equals(requestType)){
-                    response.getWriter().write(this.NO_LOGIN);
-                }else{
-                    //重定向到登录页(需要在static文件夹下建立此html文件)
-                    response.sendRedirect(request.getContextPath()+"/user/login.html");
-                }
-                return;
-            }
-        }
-    }
+		if (!needFilter) { // 不需要过滤直接传给下一个过滤器
+			System.out.println("不需要过滤直接传给下一个过滤器");
+			filterChain.doFilter(servletRequest, servletResponse);
+		} else { // 需要过滤器
+			// session中包含user对象,则是登录状态
+			if (session != null && session.getAttribute("user") != null) {
+				System.out.println("user:" + session.getAttribute("user"));
+				filterChain.doFilter(request, response);
+			} else {
+				String requestType = request.getHeader("X-Requested-With");
+				// 判断是否是ajax请求
+				if (requestType != null && "XMLHttpRequest".equals(requestType)) {
+					response.getWriter().write(this.NO_LOGIN);
+				} else {
+					// 重定向到登录页(需要在static文件夹下建立此html文件)
+					response.sendRedirect(request.getContextPath() + "/user/login.html");
+				}
+				return;
+			}
+		}
+	}
 
-    /**
-     * @Author: Lvxianqing
-     * @Description: 是否需要过滤
-     * @Date: 2018-03-12 13:20:54
-     * @param uri
-     */
-    public boolean isNeedFilter(String uri) {
+	/**
+	 * 注意：就是在方法执行前先记录时间戳，然后通过过滤器链完成请求的执行
+	 */
+	// @Override
+	// public void doFilter(ServletRequest servletRequest, ServletResponse
+	// servletResponse, FilterChain filterChain) throws IOException,
+	// ServletException {
+	// long start = System.currentTimeMillis();
+	// filterChain.doFilter(servletRequest,servletResponse);
+	// System.out.println("Execute cost="+(System.currentTimeMillis()-start));
+	// }
 
-        for (String includeUrl : includeUrls) {
-            if(includeUrl.equals(uri)) {
-                return false;
-            }
-        }
+	/**
+	 * @Description: 是否需要过滤
+	 */
+	public boolean isNeedFilter(String uri) {
 
-        return true;
-    }
+		for (String includeUrl : includeUrls) {
+			if (includeUrl.equals(uri)) {
+				return false;
+			}
+		}
+		return true;
+	}
 
-    @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+	@Override
+	public void destroy() {
 
-    }
-
-    @Override
-    public void destroy() {
-
-    }
+	}
 }

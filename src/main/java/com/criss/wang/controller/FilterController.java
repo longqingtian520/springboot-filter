@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.criss.wang.entity.User;
 
@@ -23,7 +24,7 @@ public class FilterController {
     public String login(String userName,String password,HttpServletRequest request) {
         HttpSession session = request.getSession();
 
-        if(userName.equals("root")&&password.equals("root")) {
+        if("root".equals(userName) && "root".equals(password)) {
             User user = new User();
             user.setUserName(userName);
             session.setAttribute("user",user);
